@@ -1,5 +1,3 @@
-// import axios from 'axios';
-// import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 import React, { useState, useEffect } from "react";
 import { StyledApp } from "./App.styled";
 import { getImageWithQuery } from "../../PixabayApi/pixabayApi";
@@ -29,6 +27,7 @@ export const App = () => {
     if (imageName === "") {
       return;
     }
+
     setStateStatus(status.PENDING);
 
     getImageWithQuery(imageName, page)
@@ -43,21 +42,19 @@ export const App = () => {
           return;
         }
 
+        setGallery((prevGallery) => [...prevGallery, ...hits]);
+        setError(null);
+        setStateStatus(status.RESOLVED);
+
         if (page > 1) {
           const { height: cardHeight } =
             document.documentElement.getBoundingClientRect();
 
           window.scrollBy({
-            top: cardHeight * 0.4,
+            top: cardHeight * 0.2,
             behavior: "smooth",
           });
-          console.log(cardHeight);
-          console.log(document.documentElement);
         }
-
-        setGallery((prevGallery) => [...prevGallery, ...hits]);
-        setError(null);
-        setStateStatus(status.RESOLVED);
       })
       .catch((error) => {
         setGallery([]);
@@ -73,20 +70,13 @@ export const App = () => {
   };
 
   const onLoadMorePictures = () => {
-    // this.setState((prevState) => ({
-    //   page: prevState.page + 1,
-    // }));
     setPage((prevPage) => prevPage + 1);
   };
 
   const openModal = (e) => {
-    // this.setState({
-    //   largeImage: e.target.dataset.image,
-    // });
     const { image } = e.target.dataset;
     setLargeImage(image);
     togleModal();
-    // this.setState({status: status.RESOLVED,})
   };
 
   const togleModal = () => {
@@ -104,7 +94,9 @@ export const App = () => {
       )}
       {stateStatus === REJECTED ? <div>{error}</div> : null}
 
-      <ImageGallery galleryList={gallery} onClick={openModal} />
+      {gallery.length ? (
+        <ImageGallery galleryList={gallery} onClick={openModal} />
+      ) : null}
 
       {isGallery ? <Button onLoadMore={onLoadMorePictures} /> : null}
     </StyledApp>
