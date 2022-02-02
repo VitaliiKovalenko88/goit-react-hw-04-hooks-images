@@ -44,11 +44,15 @@ export const App = () => {
         }
 
         if (page > 1) {
-          console.log("dsadfsadfsdf");
-          window.scrollTo({
-            top: document.documentElement.scrollHeight,
+          const { height: cardHeight } =
+            document.documentElement.getBoundingClientRect();
+
+          window.scrollBy({
+            top: cardHeight * 0.4,
             behavior: "smooth",
           });
+          console.log(cardHeight);
+          console.log(document.documentElement);
         }
 
         setGallery((prevGallery) => [...prevGallery, ...hits]);
@@ -86,9 +90,6 @@ export const App = () => {
   };
 
   const togleModal = () => {
-    // this.setState(({ showModal }) => ({
-    //   showModal: !showModal,
-    // }));
     setShowModal(!showModal);
   };
 
