@@ -1,4 +1,6 @@
-import React, { Component } from "react";
+// import axios from 'axios';
+// import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
+import React, { useState, useEffect } from "react";
 import { StyledApp } from "./App.styled";
 import { getImageWithQuery } from "../../PixabayApi/pixabayApi";
 import { Loader } from "../Loader/Loader";
@@ -14,109 +16,96 @@ const status = {
   REJECTED: "rejected",
 };
 
-export class App extends Component {
-  state = {
-    imageName: "",
-    gallery: [],
-    status: status.IDLE,
-    page: 1,
-    error: null,
-    showModal: false,
-    largeImage: "",
-  };
+export const App = () => {
+  const [imageName, setImageName] = useState("");
+  const [gallery, setGallery] = useState([]);
+  const [stateStatus, setStateStatus] = useState(status.IDLE);
+  const [page, setPage] = useState(1);
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [largeImage, setLargeImage] = useState("");
 
-  async componentDidUpdate(prevPropse, prevState) {
-    try {
-      const nextName = this.state.imageName;
-      const prevName = prevState.imageName;
-      const nextPage = this.state.page;
-      const prevPage = prevState.page;
-
-      if (nextName !== prevName || nextPage !== prevPage) {
-        this.setState({ status: status.PENDING });
-        this.createGallery();
-      }
-    } catch (error) {
-      console.log(error.message);
+  useEffect(() => {
+    if (imageName === "") {
+      return;
     }
-  }
+    setStateStatus(status.PENDING);
 
-  handleFormSubmite = (imageName) => {
-    this.setState({
-      imageName,
-      gallery: [],
-      page: 1,
-    });
-  };
+    getImageWithQuery(imageName, page)
+      .then(({ hits }) => {
+        setStateStatus(status.PENDING);
 
-  createGallery = async () => {
-    const { imageName, page } = this.state;
+        if (hits.length === 0) {
+          setStateStatus(status.REJECTED);
+          setGallery([]);
+          setError("Sory, You are entering an incorrect value");
 
-    try {
-      const { hits } = await getImageWithQuery(imageName, page);
+          return;
+        }
 
-      if (hits.length === 0) {
-        this.setState({
-          gallery: [],
-          error: "Sory, You are entering an incorrect value",
-          status: status.REJECTED,
-        });
-        return;
-      }
+        if (page > 1) {
+          console.log("dsadfsadfsdf");
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: "smooth",
+          });
+        }
 
-      this.setState((prevState) => ({
-        gallery: [...prevState.gallery, ...hits],
-        status: status.RESOLVED,
-        error: null,
-      }));
-    } catch (error) {
-      this.setState({
-        gallery: [],
-        status: status.REJECTED,
-        error: "something is wrong with the request address".toUpperCase(),
+        setGallery((prevGallery) => [...prevGallery, ...hits]);
+        setError(null);
+        setStateStatus(status.RESOLVED);
+      })
+      .catch((error) => {
+        setGallery([]);
+        setError("something is wrong with the request address".toUpperCase());
+        setStateStatus(status.REJECTED);
       });
-    }
+  }, [imageName, page]);
+
+  const handleFormSubmite = (imageName) => {
+    setImageName(imageName);
+    setGallery([]);
+    setPage(1);
   };
 
-  onLoadMorePictures = () => {
-    this.setState((prevState) => ({
-      page: prevState.page + 1,
-    }));
+  const onLoadMorePictures = () => {
+    // this.setState((prevState) => ({
+    //   page: prevState.page + 1,
+    // }));
+    setPage((prevPage) => prevPage + 1);
   };
 
-  openModal = (e) => {
-    this.setState({
-      largeImage: e.target.dataset.image,
-    });
-    this.togleModal();
+  const openModal = (e) => {
+    // this.setState({
+    //   largeImage: e.target.dataset.image,
+    // });
+    const { image } = e.target.dataset;
+    setLargeImage(image);
+    togleModal();
     // this.setState({status: status.RESOLVED,})
   };
 
-  togleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }));
+  const togleModal = () => {
+    // this.setState(({ showModal }) => ({
+    //   showModal: !showModal,
+    // }));
+    setShowModal(!showModal);
   };
 
-  render() {
-    const { status, gallery, error, showModal, largeImage } = this.state;
-    const isGallery = gallery.length;
-    return (
-      <StyledApp>
-        <Searchbar onSubmit={this.handleFormSubmite} />
-        {status === "pending" ? <Loader /> : null}
-        {showModal && (
-          <ModalImg
-            onClose={this.togleModal}
-            onClick={this.togleModal}
-            url={largeImage}
-          />
-        )}
-        {status === "rejected" ? <div>{error}</div> : null}
+  const isGallery = gallery.length;
+  const { PENDING, REJECTED } = status;
+  return (
+    <StyledApp>
+      <Searchbar onSubmit={handleFormSubmite} />
+      {stateStatus === PENDING ? <Loader /> : null}
+      {showModal && (
+        <ModalImg onClose={togleModal} onClick={togleModal} url={largeImage} />
+      )}
+      {stateStatus === REJECTED ? <div>{error}</div> : null}
 
-        <ImageGallery galleryList={gallery} onClick={this.openModal} />
-        {isGallery ? <Button onLoadMore={this.onLoadMorePictures} /> : null}
-      </StyledApp>
-    );
-  }
-}
+      <ImageGallery galleryList={gallery} onClick={openModal} />
+
+      {isGallery ? <Button onLoadMore={onLoadMorePictures} /> : null}
+    </StyledApp>
+  );
+};
