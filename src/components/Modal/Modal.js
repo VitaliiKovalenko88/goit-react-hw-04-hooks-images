@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { createPortal } from "react-dom";
-import { Overlay, Modal } from "./Modal.stylde";
+import { Overlay, Modal, ButtonIcon } from "./Modal.stylde";
 import PropTypes from "prop-types";
 
 const modalRoot = document.querySelector("#modal-root");
@@ -30,9 +30,9 @@ export class ModalImg extends Component {
     return createPortal(
       <Overlay onClick={this.handleBackdrope}>
         <Modal>
-          <button type="button" onClick={this.props.onClick}>
-            CLOSE X
-          </button>
+          <ButtonIcon type="button" onClick={this.props.onClick}>
+            X
+          </ButtonIcon>
           <img src={this.props.url} alt={this.props.url} />
         </Modal>
       </Overlay>,

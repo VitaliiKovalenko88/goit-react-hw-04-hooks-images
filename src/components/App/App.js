@@ -22,20 +22,21 @@ export const App = () => {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [largeImage, setLargeImage] = useState("");
+  const { PENDING, RESOLVED, REJECTED } = status;
 
   useEffect(() => {
     if (imageName === "") {
       return;
     }
 
-    setStateStatus(status.PENDING);
+    setStateStatus(PENDING);
 
     getImageWithQuery(imageName, page)
       .then(({ hits }) => {
-        setStateStatus(status.PENDING);
+        setStateStatus(PENDING);
 
         if (hits.length === 0) {
-          setStateStatus(status.REJECTED);
+          setStateStatus(REJECTED);
           setGallery([]);
           setError("Sory, You are entering an incorrect value");
 
@@ -44,7 +45,7 @@ export const App = () => {
 
         setGallery((prevGallery) => [...prevGallery, ...hits]);
         setError(null);
-        setStateStatus(status.RESOLVED);
+        setStateStatus(RESOLVED);
 
         if (page > 1) {
           const { height: cardHeight } =
@@ -59,9 +60,9 @@ export const App = () => {
       .catch((error) => {
         setGallery([]);
         setError("something is wrong with the request address".toUpperCase());
-        setStateStatus(status.REJECTED);
+        setStateStatus(REJECTED);
       });
-  }, [imageName, page]);
+  }, [PENDING, REJECTED, RESOLVED, imageName, page]);
 
   const handleFormSubmite = (imageName) => {
     setImageName(imageName);
@@ -74,9 +75,13 @@ export const App = () => {
   };
 
   const openModal = (e) => {
+    setStateStatus(PENDING);
+    togleModal();
     const { image } = e.target.dataset;
     setLargeImage(image);
-    togleModal();
+    setTimeout(() => {
+      setStateStatus(RESOLVED);
+    }, 300);
   };
 
   const togleModal = () => {
@@ -84,7 +89,7 @@ export const App = () => {
   };
 
   const isGallery = gallery.length;
-  const { PENDING, REJECTED } = status;
+
   return (
     <StyledApp>
       <Searchbar onSubmit={handleFormSubmite} />
@@ -94,7 +99,7 @@ export const App = () => {
       )}
       {stateStatus === REJECTED ? <div>{error}</div> : null}
 
-      {gallery.length ? (
+      {isGallery ? (
         <ImageGallery galleryList={gallery} onClick={openModal} />
       ) : null}
 
