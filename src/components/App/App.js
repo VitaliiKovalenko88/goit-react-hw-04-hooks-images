@@ -62,7 +62,7 @@ export const App = () => {
         setError("something is wrong with the request address".toUpperCase());
         setStateStatus(REJECTED);
       });
-  }, [PENDING, REJECTED, RESOLVED, imageName, page]);
+  }, [imageName, page]);
 
   const handleFormSubmite = (imageName) => {
     setImageName(imageName);
